@@ -1,59 +1,77 @@
 @echo off
 chcp 65001 > nul
+setlocal
 
 set REPO_URL=https://github.com/nikitakuvsh/excelMacros/archive/refs/heads/main.zip
 set ZIP_FILE=repo.zip
-set FOLDER_NAME=excelMacros-main
+set TEMP_DIR=_temp_extract
 
 echo ============================
-echo     SETUP PROJECT
+echo SETUP PROJECT
 echo ============================
 echo.
 
-REM Скачивание архива
+REM ============================
+REM DOWNLOAD
+REM ============================
+
 echo [1/3] Downloading repository...
 
-powershell -Command ^
-"Invoke-WebRequest -Uri '%REPO_URL%' -OutFile '%ZIP_FILE%'"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Invoke-WebRequest '%REPO_URL%' -OutFile '%ZIP_FILE%'"
 
-if not exist %ZIP_FILE% (
+if not exist "%ZIP_FILE%" (
     echo ERROR: Download failed
     pause
     exit /b
 )
 
-echo Download complete.
+echo Download OK
 echo.
 
-REM Распаковка
-echo [2/3] Extracting files...
+REM ============================
+REM EXTRACT
+REM ============================
 
-powershell -Command ^
-"Expand-Archive -Path '%ZIP_FILE%' -DestinationPath '.' -Force"
+echo [2/3] Extracting...
 
-echo Extracted.
+if exist "%TEMP_DIR%" rmdir /s /q "%TEMP_DIR%"
+mkdir "%TEMP_DIR%"
+
+powershell -NoProfile -ExecutionPolicy Bypass -Command "Expand-Archive '%ZIP_FILE%' '%TEMP_DIR%' -Force"
+
+if not exist "%TEMP_DIR%\excelMacros-main" (
+    echo ERROR: Extract failed
+    pause
+    exit /b
+)
+
+echo Moving files...
+
+xcopy "%TEMP_DIR%\excelMacros-main\*" "." /E /H /Y > nul
+
+REM cleanup ALWAYS safe
+if exist "%TEMP_DIR%" rmdir /s /q "%TEMP_DIR%"
+if exist "%ZIP_FILE%" del "%ZIP_FILE%"
+
 echo.
 
-REM Очистка zip
-del %ZIP_FILE%
-
-REM Переход в папку проекта
-cd %FOLDER_NAME%
+REM ============================
+REM INSTALL DEPENDENCIES
+REM ============================
 
 echo [3/3] Installing dependencies...
 
 if exist requirements.txt (
     python -m venv venv
-    call venv\Scripts\activate
-    pip install -r requirements.txt
+    call venv\Scripts\python.exe -m pip install --upgrade pip
+    call venv\Scripts\python.exe -m pip install -r requirements.txt
 ) else (
     echo No requirements.txt found
 )
 
 echo.
 echo ============================
-echo        DONE
+echo DONE
 echo ============================
-echo.
-
 pause
+endlocal
