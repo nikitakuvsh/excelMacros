@@ -32,6 +32,7 @@ KPI_MAPPING = {
     "LSV/t Total": "KPI 3",
     "LSV/t Team": "KPI 4",
     "Earnings": "KPI 5",
+    "Nsv Prem + Total": "KPI 6",
 }
 
 QUARTERS = ["Q1", "Q2", "Q3", "Q4"]
@@ -170,6 +171,7 @@ def extract_perf_data(ws):
         perf_nsv_col = headers.get("Perf NSV")
         perf_lsv_col = headers.get("Perf LSV/t")
         earnings_col = headers.get("Perf Earnings")
+        nsv_prem_col = headers.get("Perf Nsv Prem + Total")
 
         if not marketplace_col:
             continue
@@ -194,7 +196,8 @@ def extract_perf_data(ws):
             quarter_data[team] = {
                 "Perf NSV": normalize_percent(ws.cell(row, perf_nsv_col).value),
                 "Perf LSV/t": normalize_percent(ws.cell(row, perf_lsv_col).value),
-                "Perf Earnings": normalize_earnings(earnings_raw) if earnings_col else None
+                "Perf Earnings": normalize_earnings(earnings_raw) if earnings_col else None,
+                "Perf Nsv Prem + Total": normalize_earnings(ws.cell(row, nsv_prem_col).value) if nsv_prem_col else None
             }
 
             row += 1
@@ -348,6 +351,7 @@ for team in teams:
     result_ws.cell(current_row + 3, 2).value = "LSV/t Total"
     result_ws.cell(current_row + 4, 2).value = "LSV/t Team"
     result_ws.cell(current_row + 5, 2).value = "Earnings"
+    result_ws.cell(current_row + 6, 2).value = "Nsv Prem + Total"
 
     headers = ["Q1", "Q2", "Q3", "Q4", "FY(100%)", "Add Bonus", "FY (200%)", "Total"]
 
@@ -429,13 +433,22 @@ for team in teams:
             payout = get_payout(matrix, perf_earnings)
             result_ws.cell(current_row + 5, col).value = payout
 
+        # KPI 6 = Nsv Prem + Total
+        perf_nsv_prem = team_data.get("Perf Nsv Prem + Total")
+        maxtix_key = ("KPI 6", "Nsv Prem + Total", quarter)
+
+        if matrix_key in matrices:
+            matrix = matrices[matrix_key]
+            payout = get_payout(matrix, perf_nsv_prem)
+            result_ws.cell(current_row + 6, col).value = payout
+
         # -------------------------
         # FY (200%) CALC (based on Q4 performance)
         # -------------------------
 
-       # -------------------------
-# FY (200%) CALC (FIXED)
-# -------------------------
+        # -------------------------
+        # FY (200%) CALC (FIXED)
+        # -------------------------
 
         if quarter == "Q4":
 
@@ -447,6 +460,7 @@ for team in teams:
                 "KPI 3": total_data["Perf LSV/t"],
                 "KPI 4": team_data["Perf LSV/t"],
                 "KPI 5": total_data.get("Perf Earnings"),
+                "KPI 6": total_data.get("Perf Nsv Prem + Total"),
             }
 
             row_map = {
@@ -455,6 +469,7 @@ for team in teams:
                 "KPI 3": current_row + 3,
                 "KPI 4": current_row + 4,
                 "KPI 5": current_row + 5,
+                "KPI 6": current_row + 6,
             }
 
             def find_fy_matrix(kpi):
@@ -487,6 +502,7 @@ for team in teams:
         "KPI 3": current_row + 3,
         "KPI 4": current_row + 4,
         "KPI 5": current_row + 5,
+        "KPI 6": current_row + 6,
     }
 
     for kpi, row in kpi_rows.items():
