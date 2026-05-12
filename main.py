@@ -315,7 +315,8 @@ matrices = find_all_sip_matrices(sip_ws)
 teams = []
 
 if "Q1" in performance_data:
-    teams = [x for x in performance_data["Q1"].keys() if x != "Total PN"]
+    base_teams = [x for x in performance_data["Q1"].keys() if x != "Total PN"]
+    teams = ["Total PN"] + base_teams
 
 # =========================
 # STYLES
@@ -373,9 +374,15 @@ for team in teams:
             continue
 
         q_data = performance_data[quarter]
+        total_data = q_data.get("Total PN")
 
-        if team not in q_data:
-            continue
+        if total_data is None: continue
+
+        if team == "Total PN":
+            team_data = total_data
+        else:
+            if team not in q_data: continue
+            team_data = q_data[team]
 
         team_data = q_data[team]
         total_data = q_data.get("Total PN")

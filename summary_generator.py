@@ -307,7 +307,7 @@ def generate_summary_sheet(
     # =====================================================
 
     ws.merge_cells("A4:A10")
-    ws.merge_cells("A11:A18")
+    ws.merge_cells("A11:A19")
 
     ws["A4"] = "Marketplaces"
     ws["A11"] = "Account teams"
@@ -325,7 +325,7 @@ def generate_summary_sheet(
     q4_data = performance_data.get("Q4", {})
     total_pn_data = q4_data.get("Total PN", {})
 
-    all_teams = marketplace_teams + account_teams
+    all_teams = marketplace_teams + account_teams + ["Total PN"]
 
     # =====================================================
     # MERGED EARNINGS
@@ -398,9 +398,15 @@ def generate_summary_sheet(
         ws.cell(excel_row, 2).font = bold
         ws.cell(excel_row, 2).border = border
 
-        team_data = q4_data.get(team)
+        team_data = 0
+        total_pn_data = q4_data.get("Total PN", {})
 
-        if not team_data:
+        if team == "Total PN":
+            team_data = total_pn_data
+        else:
+            team_data = q4_data.get(team)
+
+        if team != "Total PN" and not team_data:
             excel_row += 1
             continue
 
@@ -558,7 +564,7 @@ def generate_summary_sheet(
     # TOTAL PN
     # =====================================================
 
-    total_row = 19
+    total_row = excel_row
 
     TOTAL_PN_100_PAYOUT = 0.285
     TOTAL_PN_TOTAL_PAYOUT = 0.385
@@ -616,7 +622,7 @@ def generate_summary_sheet(
         TOTAL_PN_TOTAL_PAYOUT,
     ]
 
-    ws.cell(total_row, 2).value = "Total PN"
+    ws.cell(total_row, 2).value = "Total Target"
     ws.cell(total_row, 2).font = big_bold
     ws.cell(total_row, 2).fill = white_fill
     ws.cell(total_row, 2).border = medium_border
