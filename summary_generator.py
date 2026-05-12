@@ -20,6 +20,7 @@ def generate_summary_sheet(
         del wb[SHEET_NAME]
 
     ws = wb.create_sheet(SHEET_NAME)
+    
 
     # =====================================================
     # HELPERS
@@ -431,6 +432,9 @@ def generate_summary_sheet(
 
         nsv_payout = get_result_value(team, "NSV Team", "FY(100%)")
         lsv_payout = get_result_value(team, "LSV/t Team", "FY(100%)")
+        TOTAL_TEAM = "Total PN"
+        TOTAL_NSV_METRIC = "NSV Total"
+        TOTAL_LSV_METRIC = "LSV/t Total"
 
         total_pn_nsv_payout = get_payout(
             ("KPI 1", "NSV Total", "Q4"),
@@ -493,11 +497,21 @@ def generate_summary_sheet(
         #     + earnings_payout
         # )
 
+        total_nsv_payout = get_result_value("Total PN", "NSV Total", "FY(200%)")
+        total_lsv_payout = get_result_value("Total PN", "LSV/t Total", "FY(200%)")
+        team_nsv_payout = fy_200_nsv_payout
+        team_lsv_payout = fy_200_lsv_payout
+        total_200_pn_nsv_fy_for_total = get_result_value("Total PN", "NSV Total", "FY (200%)")
+        total_200_pn_lsv_fy_for_total = get_result_value("Total PN", "LSV/t Total", "FY (200%)")
+
         total_payout = (
             payout_100
             + fy_200_nsv_payout
+            + total_200_pn_nsv_fy_for_total
             + fy_200_lsv_payout
+            + total_200_pn_lsv_fy_for_total
             + earnings_payout
+            + kpi6_payout
         )
 
         total_perf = total_payout / 0.30
@@ -505,6 +519,10 @@ def generate_summary_sheet(
         # =================================================
         # VALUES
         # =================================================
+        total_fy_nsv_payout = get_result_value("Total PN", "NSV Total", "FY (200%)")
+        total_fy_lsv_payout = get_result_value("Total PN", "LSV/t Total", "FY (200%)")
+
+
 
         values = [
 
@@ -578,12 +596,12 @@ def generate_summary_sheet(
     )
 
     total_pn_nsv_payout = get_payout(
-        ("KPI 1", "NSV Total", "Q4"),
+        ("KPI 1", "NSV Total", "FY(100%)"),
         total_pn_nsv_perf
     )
 
     total_pn_lsv_payout = get_payout(
-        ("KPI 3", "LSV/t Total", "Q4"),
+        ("KPI 3", "LSV/t Total", "FY(100%)"),
         total_pn_lsv_perf
     )
 
@@ -595,22 +613,27 @@ def generate_summary_sheet(
         total_pn_data.get("FY LSV/t Total Payout")
     )
 
+    total_pn_nsv_fy = get_result_value("Total PN", "NSV Total", "FY(100%)")
+    total_pn_lsv_fy = get_result_value("Total PN", "LSV/t Total", "FY(100%)")
+    total_200_pn_nsv_fy = get_result_value("Total PN", "NSV Total", "FY (200%)")
+    total_200_pn_lsv_fy = get_result_value("Total PN", "LSV/t", "FY (200%)")
+
     total_pn_values = [
 
         total_pn_nsv_perf,
-        total_pn_nsv_payout,
+        total_pn_nsv_fy,
 
         total_pn_lsv_perf,
-        total_pn_lsv_payout,
+        total_pn_lsv_fy,
 
-        total_pn_100_perf,
-        TOTAL_PN_100_PAYOUT,
+        None,
+        None,
 
         total_pn_nsv_perf,
-        total_pn_fy_nsv_payout,
+        total_200_pn_nsv_fy,
 
         total_pn_lsv_perf,
-        total_pn_fy_lsv_payout,
+        total_200_pn_lsv_fy,
 
         None,
         None,
@@ -618,8 +641,8 @@ def generate_summary_sheet(
         None,
         None,
 
-        total_pn_total_perf,
-        TOTAL_PN_TOTAL_PAYOUT,
+        None,
+        None,
     ]
 
     ws.cell(total_row, 2).value = "Total Target"
