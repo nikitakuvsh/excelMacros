@@ -4,6 +4,7 @@ from openpyxl.utils import get_column_letter
 import input_file
 import os
 from colorama import Fore, Style, init
+from summary_generator import generate_summary_sheet
 
 init()
 
@@ -637,8 +638,11 @@ for col in range(1, result_ws.max_column + 1):
 # SAVE
 # =========================
 try:
+    generate_summary_sheet(wb, result_ws, performance_data, matrices)
     wb.save(OUTPUT_FILE)
     print(Fore.GREEN + Style.BRIGHT + "Готово!" + Style.RESET_ALL)
     print(f'Сгенерированный расчёт находится в сохраннёном файле {OUTPUT_FILE} на страничке Расчёт')
+    print('Также была сгенерирована сводная таблица. Она находится на странице Сводная FY26')
+    
 except PermissionError:
     print(Fore.RED + Style.BRIGHT + 'Невозможно перезаписать файл. Сначала необходимо его закрыть или удалить. Расчёт не был завершён' + Style.RESET_ALL)
