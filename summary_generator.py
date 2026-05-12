@@ -30,6 +30,68 @@ def generate_summary_sheet(
             return float(v)
         except:
             return 0
+        
+    def get_result_value(team_name, metric_name, column_name):
+
+        headers = {}
+
+        # ==========================================
+        # HEADERS
+        # ==========================================
+
+        for col in range(1, result_ws.max_column + 1):
+
+            value = result_ws.cell(1, col).value
+
+            if value:
+                headers[str(value).strip()] = col
+
+        target_col = headers.get(column_name)
+
+        if not target_col:
+            return 0
+
+        # ==========================================
+        # FIND TEAM BLOCK
+        # ==========================================
+
+        team_row = None
+
+        for row in range(1, result_ws.max_row + 1):
+
+            value = result_ws.cell(row, 2).value
+
+            if value is None:
+                continue
+
+            if str(value).strip() == str(team_name).strip():
+
+                team_row = row
+
+                break
+
+        if not team_row:
+
+            return 0
+
+        # ==========================================
+        # FIND KPI INSIDE TEAM BLOCK
+        # ==========================================
+
+        for row in range(team_row + 1, team_row + 10):
+
+            metric = result_ws.cell(row, 2).value
+
+            if metric is None:
+                continue
+
+            if str(metric).strip() == str(metric_name).strip():
+
+                value = result_ws.cell(row, target_col).value
+
+                return safe(value)
+
+        return 0
 
     def get_payout(matrix_key, performance):
 
@@ -361,15 +423,8 @@ def generate_summary_sheet(
         # Q4 PAYOUTS
         # =================================================
 
-        nsv_payout = get_payout(
-            ("KPI 2", "NSV Team", "Q4"),
-            nsv_perf
-        )
-
-        lsv_payout = get_payout(
-            ("KPI 4", "LSV/t Team", "Q4"),
-            lsv_perf
-        )
+        nsv_payout = get_result_value(team, "NSV Team", "FY(100%)")
+        lsv_payout = get_result_value(team, "LSV/t Team", "FY(100%)")
 
         total_pn_nsv_payout = get_payout(
             ("KPI 1", "NSV Total", "Q4"),
@@ -398,24 +453,44 @@ def generate_summary_sheet(
         # FY (200%)
         # =================================================
 
-        fy_nsv_payout = get_payout(
-            ("KPI 2", "NSV Team", "FY (200%)"),
-            nsv_perf
+       # =================================================
+# FY (200%)
+# =================================================
+
+        # =================================================
+# FY (100%) payout из листа расчёта
+# =================================================
+
+        fy_nsv_payout = get_result_value(
+            team,
+            "NSV Team",
+            "FY(100%)"
         )
 
-        fy_lsv_payout = get_payout(
-            ("KPI 4", "LSV/t Team", "FY (200%)"),
-            lsv_perf
+        fy_lsv_payout = get_result_value(
+            team,
+            "LSV/t Team",
+            "FY(100%)"
         )
+
+        fy_200_nsv_payout = get_result_value(team, "NSV Team", "FY (200%)")
+        fy_200_lsv_payout = get_result_value(team, "LSV/t Team", "FY (200%)")
 
         # =================================================
         # TOTAL
         # =================================================
 
+        # total_payout = (
+        #     payout_100
+        #     + fy_nsv_payout
+        #     + fy_lsv_payout
+        #     + earnings_payout
+        # )
+
         total_payout = (
             payout_100
-            + fy_nsv_payout
-            + fy_lsv_payout
+            + fy_200_nsv_payout
+            + fy_200_lsv_payout
             + earnings_payout
         )
 
@@ -437,10 +512,10 @@ def generate_summary_sheet(
             payout_100,
 
             nsv_perf,
-            fy_nsv_payout,
+            fy_200_nsv_payout,
 
             lsv_perf,
-            fy_lsv_payout,
+            fy_200_lsv_payout,
 
             total_perf,
             total_payout,
@@ -506,14 +581,12 @@ def generate_summary_sheet(
         total_pn_lsv_perf
     )
 
-    total_pn_fy_nsv_payout = get_payout(
-        ("KPI 1", "NSV Total", "FY (200%)"),
-        total_pn_nsv_perf
+    total_pn_fy_nsv_payout = safe(
+        total_pn_data.get("FY NSV Total Payout")
     )
 
-    total_pn_fy_lsv_payout = get_payout(
-        ("KPI 3", "LSV/t Total", "FY (200%)"),
-        total_pn_lsv_perf
+    total_pn_fy_lsv_payout = safe(
+        total_pn_data.get("FY LSV/t Total Payout")
     )
 
     total_pn_values = [

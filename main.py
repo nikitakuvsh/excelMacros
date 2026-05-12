@@ -546,13 +546,12 @@ for team in teams:
     result_ws.cell(current_row, 2).font = bold_font
 
     # KPI и метрики
-    for r in range(current_row + 1, current_row + 7):
-
-        # KPI колонка
-        result_ws.cell(r, 1).font = bold_font
-
-        # метрики
-        result_ws.cell(r, 2).font = bold_font
+    kpi_rows_range = range(current_row + 1, current_row + 7)
+    for i, r in enumerate(kpi_rows_range):
+        is_bold = (i % 2 == 0)
+        for c in range(1, 11):
+            cell = result_ws.cell(r,c)
+            cell.font = bold_font if is_bold else Font(bold=False)
 
     # закрашиваем значения
     for r in range(current_row + 1, current_row + 7):
