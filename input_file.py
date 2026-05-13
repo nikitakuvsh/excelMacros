@@ -7,6 +7,7 @@ def input_file():
     text = 'BONUS CALC'
     ascii_art = pyfiglet.figlet_format(text)
     print(ascii_art)
+    print("v 1.0.0")
 
     print('Чтобы скрипт всё рассчитал, файл xlsx должен лежать в одной папке с этим скриптом!')
 
