@@ -450,11 +450,14 @@ def generate_summary_sheet(
         # 100%
         # =================================================
 
+        total_pn_nsv_payout_100 = get_result_value("Total PN", "NSV Total", "FY(100%)")
+        total_pn_lsv_payout_100 = get_result_value("Total PN", "LSV/t Total", "FY(100%)")
+
         payout_100 = (
             nsv_payout
+            + total_pn_nsv_payout_100
             + lsv_payout
-            + total_pn_nsv_payout
-            + total_pn_lsv_payout
+            + total_pn_lsv_payout_100
         )
 
         perf_100 = payout_100 / 0.30
